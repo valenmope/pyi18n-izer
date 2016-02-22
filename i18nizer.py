@@ -49,12 +49,12 @@ for entry in key_set:
   if not skip:
     key_id = raw_input('Your entry:\n\t\t' + entry.encode('utf-8').strip() + '\n\tInsert key id ' + ('[xxx.yyy.zzz]' if len(prefix) == 0 else '[' + prefix.encode('utf-8') + ']') + ' - (d) to discard: ')  	
     if key_id != 'd':
-      replacement_set[entry] = key_id.encode('utf-8').strip()
+      replacement_set[entry] = (prefix.encode('utf-8') + '.' if len(prefix) > 0 else '') + key_id.encode('utf-8').strip()
       replacement_list.append(entry)
 
 translation_content = ''
 for entry in replacement_list:
-  replacement_text = "{% trans '" + (prefix.encode('utf-8') + '.' if len(prefix) > 0 else '') + replacement_set.get(entry).encode('utf-8') + "' %}"
+  replacement_text = "{% trans '" + replacement_set.get(entry).encode('utf-8') + "' %}"
   html = html.replace(entry.encode('utf-8'), replacement_text)
   translation_content += 'msgid "' + replacement_set.get(entry).encode('utf-8') + '"\nmsgstr "' + entry.encode('utf-8').strip() + '"\n'
 
@@ -63,6 +63,8 @@ input_file = open(input_file_name, 'w').close()
 
 #2) update input file with new content
 input_file = open(input_file_name, 'w')
+soup = BeautifulSoup(html, "html.parser")
+html = soup.prettify() 
 input_file.write(html)
 input_file.flush()
 input_file.close()
