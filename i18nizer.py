@@ -17,6 +17,8 @@ input_file.close()
 
 html_cleaned = html.replace('{%', '<script>')
 html_cleaned = html_cleaned.replace('%}', '</script>')
+html_cleaned = html_cleaned.replace('{{', '<script>')
+html_cleaned = html_cleaned.replace('}}', '</script>')
 
 soup = BeautifulSoup(html_cleaned, "html.parser")
 
@@ -38,6 +40,7 @@ text = '\n'.join(chunk for chunk in chunks if chunk)
 
 prefix = raw_input('Properties text prefix [xxx.yyy.zzz]: ')
 
+refused_set = []
 replacement_set = {}
 replacement_list = []
 key_set = text.split('\n')
@@ -45,12 +48,14 @@ for entry in key_set:
   skip = False
   if entry in replacement_set:
     option = raw_input('Your entry:\n\t\t' + entry.encode('utf-8').strip() + '\n\tAlready stored with key: ' + replacement_set.get(entry).encode('utf-8') + '\n\tDo you want to keep same entry [1] or create a new one [2]? ')
-    skip = True if option == 1 else False
-  if not skip:
+    skip = True if option == '1' else False
+  if not skip and entry not in refused_set:
     key_id = raw_input('Your entry:\n\t\t' + entry.encode('utf-8').strip() + '\n\tInsert key id ' + ('[xxx.yyy.zzz]' if len(prefix) == 0 else '[' + prefix.encode('utf-8') + ']') + ' - (d) to discard: ')  	
     if key_id != 'd':
       replacement_set[entry] = (prefix.encode('utf-8') + '.' if len(prefix) > 0 else '') + key_id.encode('utf-8').strip()
       replacement_list.append(entry)
+    else:
+      refused_set.append(entry)
 
 translation_content = ''
 for entry in replacement_list:
@@ -65,7 +70,7 @@ input_file = open(input_file_name, 'w').close()
 input_file = open(input_file_name, 'w')
 soup = BeautifulSoup(html, "html.parser")
 html = soup.prettify() 
-input_file.write(html)
+input_file.write(html.encode('utf-8'))
 input_file.flush()
 input_file.close()
 
